@@ -15,6 +15,16 @@ Use the feature identifier to find all code related to the feature.
 - **BFF layer only** — this is a Spring Boot (including WebFlux/Reactive) and Kotlin backend-for-frontend.
 - **Skip all test files.** Do not document tests.
 
+## Secret handling (applies to all output)
+
+Config files and downstream call details routinely contain credentials. Never copy a secret value into the output — document the *shape* and *purpose* of the property, not the value.
+
+- **Treat as secret** any property whose key matches (case-insensitive) `password`, `secret`, `token`, `key`, `credential`, `apikey`, `api[-_]?key`, `client[-_]?secret`, `auth`, `private`, `cert`, `dsn`, `connection[-_]?string`, or which holds a JWT, PEM block, or other high-entropy string.
+- **Treat as secret** the values of `Authorization`, `Proxy-Authorization`, `Cookie`, `Set-Cookie`, `X-Api-Key`, `X-Auth-Token`, and any header whose name contains `token`, `key`, `secret`, or `auth`.
+- When documenting such a property or header, write the key/name, its purpose, its type/format (e.g. "JWT", "32-char hex"), and replace the value with `<REDACTED>`. Never reproduce the literal value, even if it appears to be a placeholder, dev value, or `${ENV_VAR}` default — operators read docs assuming literal values are real.
+- If a code snippet you want to quote contains a secret, replace the secret with `<REDACTED>` before including the snippet.
+- If you are unsure whether a value is sensitive, redact it.
+
 ## How to explore
 
 1. Start from the feature identifier and trace outward. Find every file, class, and function that is part of or directly supports the feature.
@@ -95,7 +105,7 @@ Whenever you encounter Kotlin-specific patterns in the feature, call them out an
 ### 7. Downstream services and contracts
 For every external or downstream service the feature calls:
 - What service is it? What endpoint(s) does it call?
-- What does the request look like (method, path, headers, body)?
+- What does the request look like (method, path, headers, body)? **Apply the secret-handling rules above to header values and any auth-bearing body fields.**
 - What does the response look like (status codes, body shape)?
 - How are errors from this service handled?
 - Include the relevant DTOs/models.
@@ -105,6 +115,7 @@ For every external or downstream service the feature calls:
 - What do they control?
 - Are there environment-specific overrides or profiles?
 - Are there feature flags? How are they checked in code?
+- **Apply the secret-handling rules above:** document property keys and their purpose, but redact values for any property that matches the secret-key patterns or holds a credential-shaped value.
 
 ## Formatting rules
 
